@@ -1,3 +1,10 @@
+I created a man-in-the-middle script that enables FFmpeg hardware decoding and encoding using Intel QSV inside the SageTV Linux Docker container. It runs a “Docker inside Docker” setup that uses the linuxserver/ffmpeg image, because the base SageTV Docker is built on an older Ubuntu version that does not support the required Intel drivers. By passing the video device (/dev/dri) from the host into the SageTV container, the script can launch linuxserver/ffmpeg with proper access to the Intel GPU.
+
+The script intercepts the FFmpeg command that SageTV sends and checks whether the request is for MPEG4 transcoding. If it is, the script redirects that job to the linuxserver/ffmpeg container and uses Intel QSV for hardware accelerated H.264 encoding, while still outputting a stream that SageTV can consume. For non-transcode or non-MPEG4 requests, the script falls back to the FFmpeg binary provided by the SageTVTranscoder-FFmpeg plugin, so SageTV still receives the exact output format it expects for parsing. The current implementation is tuned for Intel QSV, but it can be adapted to other hardware or custom FFmpeg parameters and gives full control over how FFmpeg is launched.
+
+
+# How to install
+
 1. Pass device `/dev/dri` into the SageTV Docker container:
 
 ```bash
